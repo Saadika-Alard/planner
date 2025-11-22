@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PDF Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    background: #f8f9f5;
+  }
+
+  #sidebar {
+    width: 200px;
+    background: #eceee8;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  #thumbContainer canvas {
+    margin-bottom: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 2px solid transparent;
+  }
+
+  .thumb-selected {
+    border-color: #6b8e23;
+    background: #d8e8c8;
+  }
+
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: #6b8e23;
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  header button {
+    background: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 6px;
+  }
+
+  header button:hover {
+    background: #f0f0f0;
+  }
+
+  iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: white;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <h4>Pages</h4>
+  <div id="thumbContainer"></div>
+</div>
+
+<!-- Main PDF area -->
+<div id="main">
+  <header>
+    <h2 id="pdfTitle">Loading PDF…</h2>
+    <div>
+      <button onclick="printSelected()">🖨 Print Selected</button>
+      <button onclick="printAll()">🖨 Print All</button>
+      <button onclick="downloadOne()">⬇ Download</button>
+      <button onclick="downloadAll()">⬇ Download All</button>
+      <button id="toggleBtn" onclick="togglePack()" style="display:none;">↔ Switch Pack</button>
+    </div>
+  </header>
+
+  <iframe id="pdfFrame"></iframe>
+</div>
+
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+
+<!-- PDF-Lib for extracting pages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+
+<script>
+/* ---------------------------------------------------------
+   Load Data
+--------------------------------------------------------- */
+const params = new URLSearchParams(location.search);
+const viewerId = params.get("id");
+
+const pack = JSON.parse(localStorage.getItem("viewer_" + viewerId));
+
+if (!pack) {
+  document.getElementById("pdfTitle").textContent = "Invalid PDF data";
+  throw new Error("Missing viewer pack from localStorage");
+}
+
+document.getElementById("pdfTitle").textContent = pack.title;
+
+/* ---------------------------------------------------------
+   Base64 → Blob URL
+--------------------------------------------------------- */
+function safeBase64ToBlobUrl(base64) {
+  if (!base64) return "";
+
+  // Remove whitespace or invalid characters
+  base64 = base64.replace(/[^A-Za-z0-9+/=]/g, "");
+
+  const raw = atob(base64);
+  const bytes = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+
+  return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+}
+
+/* ---------------------------------------------------------
+   Active PDF Pack (teaching or exercise)
+--------------------------------------------------------- */
+let currentBase64 = pack.teaching || pack.exercise;
+let pdfUrl = safeBase64ToBlobUrl(currentBase64);
+
+document.getElementById("pdfFrame").src = pdfUrl;
+
+if (pack.teaching && pack.exercise) {
+  document.getElementById("toggleBtn").style.display = "inline-block";
+}
+
+/* ---------------------------------------------------------
+   Toggle Teaching / Exercise Pack
+--------------------------------------------------------- */
+function togglePack() {
+  if (currentBase64 === pack.teaching) {
+    currentBase64 = pack.exercise;
+    document.getElementById("pdfTitle").textContent = pack.title + " — Exercise Pack";
+  } else {
+    currentBase64 = pack.teaching;
+    document.getElementById("pdfTitle").textContent = pack.title + " — Teaching Pack";
+  }
+
+  pdfUrl = safeBase64ToBlobUrl(currentBase64);
+  document.getElementById("pdfFrame").src = pdfUrl;
+
+  generateThumbnails();
+}
+
+/* ---------------------------------------------------------
+   Thumbnail Rendering
+--------------------------------------------------------- */
+let selectedPages = [];
+
+async function generateThumbnails() {
+  selectedPages = [];
+
+  const pdfBytes = Uint8Array.from(atob(currentBase64), c => c.charCodeAt(0));
+  const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+
+  const container = document.getElementById("thumbContainer");
+  container.innerHTML = "";
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale: 0.2 });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+
+    canvas.onclick = () => {
+      if (selectedPages.includes(i)) {
+        selectedPages = selectedPages.filter(n => n !== i);
+        canvas.classList.remove("thumb-selected");
+      } else {
+        selectedPages.push(i);
+        canvas.classList.add("thumb-selected");
+      }
+    };
+
+    container.appendChild(canvas);
+  }
+}
+
+generateThumbnails();
+
+/* ---------------------------------------------------------
+   Downloads
+--------------------------------------------------------- */
+function downloadOne() {
+  const a = document.createElement("a");
+  a.href = pdfUrl;
+  a.download = pack.title + ".pdf";
+  a.click();
+}
+
+function downloadAll() {
+  if (pack.teaching) {
+    const a = document.createElement("a");
+    a.href = safeBase64ToBlobUrl(pack.teaching);
+    a.download = pack.title + " - Teaching.pdf";
+    a.click();
+  }
+  if (pack.exercise) {
+    const a = document.createElement("a");
+    a.href = safeBase64ToBlobUrl(pack.exercise);
+    a.download = pack.title + " - Exercise.pdf";
+    a.click();
+  }
+}
+
+/* ---------------------------------------------------------
+   Printing
+--------------------------------------------------------- */
+function printAll() {
+  document.getElementById("pdfFrame").contentWindow.print();
+}
+
+async function printSelected() {
+  if (!selectedPages.length)
+    return alert("Select pages first.");
+
+  const bytes = Uint8Array.from(atob(currentBase64), c => c.charCodeAt(0));
+  const original = await PDFLib.PDFDocument.load(bytes);
+  const output = await PDFLib.PDFDocument.create();
+
+  for (const p of selectedPages) {
+    const [pg] = await output.copyPages(original, [p - 1]);
+    output.addPage(pg);
+  }
+
+  const outBytes = await output.save();
+  const blobUrl = URL.createObjectURL(new Blob([outBytes], { type: "application/pdf" }));
+
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = blobUrl;
+  document.body.appendChild(iframe);
+
+  iframe.onload = () => iframe.contentWindow.print();
+}
+</script>
+
+</body>
+</html>

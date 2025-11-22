@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson Library</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">📅 Planner</a>
+    <a href="pdf-manager.html">📘 Lesson Splitter</a>
+    <a href="resources.html" class="active">📚 Library</a>
+  </nav>
+
+  <main style="padding: 2rem;">
+    <h1>📚 My Lesson Library</h1>
+    <div id="resourceList"></div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script>
+    const resources = JSON.parse(localStorage.getItem("resources")) || [];
+    const container = document.getElementById("resourceList");
+
+    if (resources.length === 0) {
+      container.innerHTML = "<p>No lesson packs uploaded yet.</p>";
+    } else {
+      resources.forEach(res => {
+        container.innerHTML += `
+          <div class="resource">
+            <h4>${res.title}</h4>
+            <div class="resource-links">
+              <a href="${res.teachingPack}" target="_blank">📘 Teaching Pack</a>
+              <a href="${res.exercisePack}" target="_blank">✏️ Exercise Pack</a>
+            </div>
+            <p><small>Uploaded: ${new Date(res.uploaded).toLocaleDateString()}</small></p>
+          </div>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>

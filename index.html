@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Homeschool Planner</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <nav>
+    <a href="index.html" class="active">📅 Planner</a>
+    <a href="pdf-manager.html">📘 Lesson Splitter</a>
+    <a href="resources.html">📚 Library</a>
+  </nav>
+
+  <div class="planner">
+    <header>
+      <h1>🏡 Homeschool Planner</h1>
+      <div class="controls">
+        <button id="prev">❮</button>
+        <h2 id="monthYear"></h2>
+        <button id="next">❯</button>
+        <button id="addEventBtn" class="primary-btn">＋ Add Event</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="calendarSection">
+        <div id="calendar"></div>
+      </section>
+      <aside id="dashboard">
+        <h3>📘 This Week’s Schedule</h3>
+        <ul id="eventList"></ul>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <!-- Event Modal -->
+  <div id="eventModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modalHeading">Add Event</h2>
+
+      <label>Title</label>
+      <input type="text" id="eventTitle" />
+
+      <label>Date</label>
+      <input type="date" id="eventDate" />
+
+      <label>Start Time</label>
+      <input type="time" id="eventStartTime" />
+
+      <label>End Time</label>
+      <input type="time" id="eventEndTime" />
+
+      <label>Child</label>
+      <select id="eventChild">
+        <option value="">Select child</option>
+        <option>Emma</option>
+        <option>Liam</option>
+        <option>Ava</option>
+        <option>Noah</option>
+        <option>Olivia</option>
+      </select>
+
+      <label>Subject</label>
+      <select id="eventSubject">
+        <option value="">Select subject</option>
+        <option>English</option>
+        <option>Math</option>
+        <option>Science</option>
+        <option>History</option>
+        <option>Geography</option>
+        <option>Creative Arts</option>
+        <option>Life Orientation</option>
+      </select>
+
+      <div class="modal-actions">
+        <button id="saveEvent" class="primary-btn">Save</button>
+        <button id="closeModal" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lesson Details Modal -->
+  <div id="lessonModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="lessonTitle">Lesson Details</h2>
+      <p><b>Child:</b> <span id="lessonChild"></span></p>
+      <p><b>Subject:</b> <span id="lessonSubject"></span></p>
+      <p><b>Time:</b> <span id="lessonTime"></span></p>
+
+      <div id="lessonLinks"></div>
+
+      <div class="modal-actions">
+        <button id="closeLessonModal" class="primary-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+
+  <footer>
+    <p>🌿 Organized learning, one week at a time.</p>
+  </footer>
+
+  <script src="js/utils.js"></script>
+  <script src="js/planner.js"></script>
+</body>
+
+</html>

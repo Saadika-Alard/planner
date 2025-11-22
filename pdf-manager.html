@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson Pack Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html">📅 Planner</a>
+    <a href="pdf-manager.html" class="active">📘 Lesson Splitter</a>
+    <a href="resources.html">📚 Library</a>
+  </nav>
+
+  <main style="padding:2rem;">
+    <h1>📘 Lesson Pack Sorter</h1>
+
+    <section class="upload-box">
+      <label for="pdfUpload">Upload Lesson Plan (PDF)</label>
+      <input type="file" id="pdfUpload" accept="application/pdf" />
+    </section>
+
+    <section id="sorterArea" class="hidden">
+      <div id="foldersRow">
+        <div id="teachingFolder" class="dropFolder">
+          📘 Teaching (<span id="teachCount">0</span>)
+        </div>
+        <div id="exerciseFolder" class="dropFolder">
+          ✏️ Exercises (<span id="exCount">0</span>)
+        </div>
+      </div>
+
+      <p id="pageIndicator" class="pageIndicator">Unassigned: 0 / Total: 0</p>
+
+      <div id="thumbGrid" class="thumb-container" style="position: relative;"></div>
+
+      <button id="saveSplit" class="primary-btn" disabled>✅ Save Lesson Packs</button>
+    </section>
+
+    <section id="resourceListSection">
+      <h3>Uploaded Lesson Packs</h3>
+      <div id="resourceList"></div>
+    </section>
+
+    <!-- Save Lesson Modal -->
+    <div id="saveModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Name Your Lesson Pack</h2>
+        <label>Title</label>
+        <input type="text" id="modalTitle" placeholder="Lesson Pack Name" />
+
+        <label>Subject</label>
+        <select id="modalSubject">
+          <option>English</option>
+          <option>Math</option>
+          <option>Science</option>
+          <option>History</option>
+          <option>Geography</option>
+          <option>Creative Arts</option>
+          <option>Life Orientation</option>
+          <option>General</option>
+        </select>
+
+        <label>Notes (optional)</label>
+        <textarea id="modalNotes" rows="2" placeholder="Any details or week info..."></textarea>
+
+        <div class="modal-actions">
+          <button id="confirmSave" class="primary-btn">Save</button>
+          <button id="cancelSave" class="cancel-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Delete Lesson Pack?</h2>
+        <p>This will permanently remove the selected pack from your planner.</p>
+        <div class="modal-actions">
+          <button id="cancelDelete" class="cancel-btn">Cancel</button>
+          <button id="confirmDelete" class="primary-btn" style="background:#f87171;border:none;">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assign to Calendar Modal -->
+    <div id="assignModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Assign Lesson Pack</h2>
+        <label>Child</label>
+        <select id="assignChild">
+          <option>Emma</option>
+          <option>Liam</option>
+          <option>Olivia</option>
+        </select>
+
+        <label>Start Date</label>
+        <input type="date" id="assignStartDate" />
+
+        <label>End Date</label>
+        <input type="date" id="assignEndDate" />
+
+
+        <div class="modal-actions">
+          <button id="cancelAssign" class="cancel-btn">Cancel</button>
+          <button id="confirmAssign" class="primary-btn">Assign</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/pdfManager.js"></script>
+</body>
+</html>

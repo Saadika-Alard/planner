@@ -1,0 +1,421 @@
+:root {
+  --primary: #A3B18A;
+  --secondary: #DAD7CD;
+  --accent: #E9EDC9;
+  --light-bg: #F6F7F2;
+  --text: #2F2F2F;
+  --shadow: rgba(0, 0, 0, 0.08);
+}
+
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  background: var(--light-bg);
+  margin: 0;
+  color: var(--text);
+}
+
+/* NAV */
+nav {
+  background: var(--primary);
+  padding: 0.5rem 1rem;
+  display: flex;
+  gap: 1rem;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+}
+nav a.active,
+nav a:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Main layout */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--primary);
+  color: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 5px var(--shadow);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primary-btn {
+  background: white;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+.primary-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* Calendar layout */
+main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  padding: 1rem 2rem;
+}
+/* 🗓️ Calendar Grid */
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.day {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  padding: 0.5rem;
+  min-height: 90px;
+  position: relative;
+  cursor: pointer;
+}
+
+.day.empty {
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+}
+
+.date-num {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.day-events {
+  margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calendar-event {
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* 🕓 Calendar time display */
+.calendar-event .time {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+/* 📘 Lesson modal styling */
+#lessonLinks {
+  margin-top: 0.5rem;
+}
+
+.lesson-link {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.lesson-link:hover {
+  text-decoration: underline;
+}
+
+
+/* 🎨 Child Colors */
+.child-emma { background: #a78bfa; }    /* soft lavender */
+.child-liam { background: #60a5fa; }    /* blue */
+.child-ava { background: #f87171; }     /* red */
+.child-noah { background: #34d399; }    /* green */
+.child-olivia { background: #fbbf24; }  /* amber */
+.child-default { background: #9ca3af; } /* gray */
+
+
+/* Dashboard */
+#dashboard {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+#eventList li {
+  list-style: none;
+  background: var(--accent);
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+/* PDF Splitter styles */
+.upload-box {
+  background: var(--light-bg);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 2px dashed var(--primary);
+  text-align: center;
+}
+.resource {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 320px;
+}
+
+.thumb-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.page-thumb {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  padding: 0.5rem;
+  width: 140px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.page-thumb canvas {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.page-thumb label {
+  display: block;
+  font-size: 0.75rem;
+}
+
+.group-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.group-card input, .group-card select {
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#foldersRow {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1rem;
+}
+
+.dropFolder {
+  width: 40%;
+  background: var(--secondary);
+  border: 3px dashed var(--primary);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 500;
+  transition: background 0.3s, transform 0.2s;
+}
+.dropFolder.dragover {
+  background: var(--accent);
+  transform: scale(1.03);
+}
+
+.thumb-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-thumb {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  padding: 0.3rem;
+  width: 120px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+.page-thumb.selected {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 5px var(--primary);
+}
+
+.pageIndicator {
+  text-align: center;
+  margin: 0.5rem 0 1rem 0;
+  font-weight: 500;
+}
+
+.dropFolder {
+  width: 40%;
+  background: var(--secondary);
+  border: 3px dashed var(--primary);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 500;
+  transition: background 0.3s, transform 0.2s;
+  min-height: 80px;
+}
+.dropFolder.dragover {
+  background: var(--accent);
+  transform: scale(1.03);
+}
+.dropFolder p {
+  font-size: 0.8rem;
+}
+
+.thumb-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.page-thumb {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  padding: 0.3rem;
+  width: 120px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+.page-thumb.selected {
+  border: 2px solid var(--primary);
+  box-shadow: 0 0 5px var(--primary);
+  background: #f9fff4;
+}
+
+.selection-box {
+  position: absolute;
+  border: 2px dashed var(--primary);
+  background: rgba(163, 177, 138, 0.25);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Modal Styling */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 340px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-content h2 {
+  color: var(--primary);
+  margin-top: 0;
+  text-align: center;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.resource {
+  position: relative;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: #f87171;
+  border: none;
+  color: white;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+.resource.fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#deleteModal .primary-btn {
+  background: #ef4444;
+  color: white;
+}
+#deleteModal .primary-btn:hover {
+  background: #dc2626;
+}
+
