@@ -27,12 +27,20 @@
       container.innerHTML = "<p>No lesson packs uploaded yet.</p>";
     } else {
       resources.forEach(res => {
+        const teachingLink = res.teachingPack
+          ? `<a href="pdf-viewer.html?res=${res.id}&type=teaching" target="_blank">📘 Teaching Pack</a>`
+          : "";
+
+        const exerciseLink = res.exercisePack
+          ? `<a href="pdf-viewer.html?res=${res.id}&type=exercise" target="_blank">✏️ Exercise Pack</a>`
+          : "";
+
         container.innerHTML += `
           <div class="resource">
             <h4>${res.title}</h4>
             <div class="resource-links">
-              <a href="${res.teachingPack}" target="_blank">📘 Teaching Pack</a>
-              <a href="${res.exercisePack}" target="_blank">✏️ Exercise Pack</a>
+              ${teachingLink}
+              ${exerciseLink}
             </div>
             <p><small>Uploaded: ${new Date(res.uploaded).toLocaleDateString()}</small></p>
           </div>

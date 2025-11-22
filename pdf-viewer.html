@@ -109,15 +109,17 @@
 <script>
 /* ---------------------------------------------------------
    Load Data
---------------------------------------------------------- */
+---------------------------------------------------------- */
 const params = new URLSearchParams(location.search);
-const viewerId = params.get("id");
+const resourceId = params.get("res");
+const requestedType = params.get("type");
 
-const pack = JSON.parse(localStorage.getItem("viewer_" + viewerId));
+const storedResources = JSON.parse(localStorage.getItem("resources")) || [];
+const pack = storedResources.find(r => r.id === resourceId);
 
 if (!pack) {
-  document.getElementById("pdfTitle").textContent = "Invalid PDF data";
-  throw new Error("Missing viewer pack from localStorage");
+  document.getElementById("pdfTitle").textContent = "Resource not found";
+  throw new Error("Missing resource with id " + resourceId);
 }
 
 document.getElementById("pdfTitle").textContent = pack.title;
@@ -141,12 +143,38 @@ function safeBase64ToBlobUrl(base64) {
 /* ---------------------------------------------------------
    Active PDF Pack (teaching or exercise)
 --------------------------------------------------------- */
-let currentBase64 = pack.teaching || pack.exercise;
+const hasTeaching = Boolean(pack.teachingPack);
+const hasExercise = Boolean(pack.exercisePack);
+
+let currentBase64;
+let currentLabel;
+
+if (requestedType === "exercise" && hasExercise) {
+  currentBase64 = pack.exercisePack;
+  currentLabel = "Exercise Pack";
+} else if (requestedType === "teaching" && hasTeaching) {
+  currentBase64 = pack.teachingPack;
+  currentLabel = "Teaching Pack";
+} else if (hasTeaching) {
+  currentBase64 = pack.teachingPack;
+  currentLabel = "Teaching Pack";
+} else {
+  currentBase64 = pack.exercisePack;
+  currentLabel = "Exercise Pack";
+}
+
+if (!currentBase64) {
+  document.getElementById("pdfTitle").textContent = "No PDF found for this resource";
+  throw new Error("Resource does not contain a PDF pack");
+}
+
+document.getElementById("pdfTitle").textContent = `${pack.title} — ${currentLabel}`;
+
 let pdfUrl = safeBase64ToBlobUrl(currentBase64);
 
 document.getElementById("pdfFrame").src = pdfUrl;
 
-if (pack.teaching && pack.exercise) {
+if (hasTeaching && hasExercise) {
   document.getElementById("toggleBtn").style.display = "inline-block";
 }
 
@@ -154,13 +182,15 @@ if (pack.teaching && pack.exercise) {
    Toggle Teaching / Exercise Pack
 --------------------------------------------------------- */
 function togglePack() {
-  if (currentBase64 === pack.teaching) {
-    currentBase64 = pack.exercise;
-    document.getElementById("pdfTitle").textContent = pack.title + " — Exercise Pack";
+  if (currentBase64 === pack.teachingPack) {
+    currentBase64 = pack.exercisePack;
+    currentLabel = "Exercise Pack";
   } else {
-    currentBase64 = pack.teaching;
-    document.getElementById("pdfTitle").textContent = pack.title + " — Teaching Pack";
+    currentBase64 = pack.teachingPack;
+    currentLabel = "Teaching Pack";
   }
+
+  document.getElementById("pdfTitle").textContent = `${pack.title} — ${currentLabel}`;
 
   pdfUrl = safeBase64ToBlobUrl(currentBase64);
   document.getElementById("pdfFrame").src = pdfUrl;
@@ -214,20 +244,20 @@ generateThumbnails();
 function downloadOne() {
   const a = document.createElement("a");
   a.href = pdfUrl;
-  a.download = pack.title + ".pdf";
+  a.download = `${pack.title} - ${currentLabel}.pdf`;
   a.click();
 }
 
 function downloadAll() {
-  if (pack.teaching) {
+  if (pack.teachingPack) {
     const a = document.createElement("a");
-    a.href = safeBase64ToBlobUrl(pack.teaching);
+    a.href = safeBase64ToBlobUrl(pack.teachingPack);
     a.download = pack.title + " - Teaching.pdf";
     a.click();
   }
-  if (pack.exercise) {
+  if (pack.exercisePack) {
     const a = document.createElement("a");
-    a.href = safeBase64ToBlobUrl(pack.exercise);
+    a.href = safeBase64ToBlobUrl(pack.exercisePack);
     a.download = pack.title + " - Exercise.pdf";
     a.click();
   }
