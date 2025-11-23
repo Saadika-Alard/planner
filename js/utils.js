@@ -34,8 +34,15 @@ window.subjectColors = {
   General: "#E5E7EB"
 };
 
-// neutral, soft palette for children
-const childPalette = ["#CBD5B1", "#D4DFBF", "#C8D8C0", "#D9E2CF", "#E0E4D4", "#C5D2C4"];
+// neutral, soft but distinct palette for children
+const childPalette = [
+  "#C7D2FE", // soft indigo
+  "#BFDBFE", // soft blue
+  "#A5F3FC", // soft cyan
+  "#BBF7D0", // soft green
+  "#FDE68A", // soft yellow
+  "#FECACA"  // soft red
+];
 // slightly more saturated palette for subjects
 const subjectPalette = ["#F9E5A6", "#D3E8C3", "#CDE4F4", "#E4D7F6", "#F9D3C9", "#F4E3B7"];
 

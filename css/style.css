@@ -432,13 +432,15 @@ main {
 }
 
 .calendar-event {
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
   background: #e5e7eb; /* default neutral – overridden via inline style */
   color: #111827;
   font-size: 0.75rem;
-  text-align: center;
-  border-left: 3px solid #9ca3af; /* child color accent */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 4px solid #9ca3af; /* child color accent */
 }
 
 /* 🕓 Calendar time display */
@@ -551,10 +553,13 @@ main {
 
 .event-child-dot {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
-  margin-right: 6px;
+  margin-left: 6px;
+  margin-right: 2px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
 }
 
 .child-filter-bar {

@@ -35,6 +35,17 @@ const saveExtraBtn = document.getElementById("saveExtraResource");
 pdfUpload.addEventListener("change", handlePDFUpload);
 saveBtn.addEventListener("click", saveLessonPacks);
 if (saveExtraBtn) saveExtraBtn.addEventListener("click", saveExtraResource);
+if (extraTypeSelect) {
+  extraTypeSelect.addEventListener("change", () => {
+    const kind = extraTypeSelect.value;
+    if (extraLinkInput) {
+      extraLinkInput.style.display = kind === "link" ? "" : "none";
+    }
+    if (extraFileInput) {
+      extraFileInput.style.display = kind === "image" ? "" : "none";
+    }
+  });
+}
 
 /* ----------------------------------------------------------
    Load PDF + Thumbnails
@@ -197,6 +208,13 @@ async function uploadToStorage(path, base64) {
   const { error } = await supaClient.storage.from("packs").upload(path, blob, { upsert: true });
   if (error) throw error;
 
+  const { data } = supaClient.storage.from("packs").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function uploadBlobToStorage(path, blob) {
+  const { error } = await supaClient.storage.from("packs").upload(path, blob, { upsert: true });
+  if (error) throw error;
   const { data } = supaClient.storage.from("packs").getPublicUrl(path);
   return data.publicUrl;
 }
@@ -537,14 +555,15 @@ async function saveExtraResource() {
   let exerciseUrl = "";
   try {
     showLoader();
-    if (kind === "pdf" && file) {
+    if (kind === "image" && file) {
       const ts = Date.now();
-      exerciseUrl = await uploadToStorage(`${currentUser.id}/${ts}-extra.pdf`, await splitPDF(file, [1]));
+      const ext = file.name.split(".").pop() || "png";
+      exerciseUrl = await uploadBlobToStorage(`${currentUser.id}/${ts}-extra.${ext}`, file);
     } else if (kind === "link" && link) {
       exerciseUrl = link;
     } else {
       hideLoader();
-      alert("Provide a link or upload a PDF.");
+      alert("Provide a link or upload an image.");
       return;
     }
 

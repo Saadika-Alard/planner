@@ -307,10 +307,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           chip.style.background = subjectColor || "#e5e7eb";
           chip.style.borderLeftColor = childColor || "#9ca3af";
+          const timeLabel =
+            ev.start_time ||
+            ev.startTime ||
+            "";
 
           chip.innerHTML = `
-            <small>${ev.title}</small>
-            ${ev.startTime ? `<span class="time">${ev.startTime}</span>` : ""}
+            <div class="calendar-event-main">
+              <small>${ev.title}</small>
+              ${timeLabel ? `<span class="time">${timeLabel}</span>` : ""}
+            </div>
+            <span class="event-child-dot" style="background:${childColor};"></span>
           `;
 
           chip.onclick = e => {
