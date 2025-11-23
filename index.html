@@ -6,13 +6,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Homeschool Planner</title>
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
 </head>
 
 <body>
-  <nav>
-    <a href="index.html" class="active">📅 Planner</a>
-    <a href="pdf-manager.html">📘 Lesson Splitter</a>
-    <a href="resources.html">📚 Library</a>
+  <div id="pageLoader" class="page-loader hidden">
+    <div class="loader-ring"></div>
+  </div>
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon" aria-hidden="true">🌿</div>
+      <div class="brand-copy">
+        <span class="brand-eyebrow">Family dashboard</span>
+        <span class="brand-title">Homeschool Planner</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link active">
+        <span class="nav-icon" aria-hidden="true">🗓️</span>
+        <div class="nav-label">
+          <span>Planner</span>
+          <small>Weekly schedule</small>
+        </div>
+      </a>
+      <a href="pdf-manager.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">✂️</span>
+        <div class="nav-label">
+          <span>Lesson Splitter</span>
+          <small>Pack builder</small>
+        </div>
+      </a>
+      <a href="resources.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🎒</span>
+        <div class="nav-label">
+          <span>Library</span>
+          <small>Saved packs</small>
+        </div>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="ghost-btn">Log out</button>
+    </div>
   </nav>
 
   <div class="planner">
@@ -23,16 +58,38 @@
         <h2 id="monthYear"></h2>
         <button id="next">❯</button>
         <button id="addEventBtn" class="primary-btn">＋ Add Event</button>
+        <button id="kidViewBtn" class="ghost-btn ghost-btn-small" disabled>Kid view</button>
       </div>
     </header>
+
+    <section class="child-filter-bar">
+      <div>
+        <p class="eyebrow">View by child</p>
+        <p class="dashboard-note">
+          Tap a name to focus; “All kids” shows everyone together.
+          <a href="setup.html" class="ghost-link-btn">Manage kids & subjects</a>
+          <button id="parentPinLink" class="ghost-link-btn" type="button">Parent PIN</button>
+        </p>
+      </div>
+      <div id="childFilterChips" class="child-filter-chips"></div>
+    </section>
 
     <main>
       <section id="calendarSection">
         <div id="calendar"></div>
       </section>
       <aside id="dashboard">
-        <h3>📘 This Week’s Schedule</h3>
-        <ul id="eventList"></ul>
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow">Snapshot</p>
+            <h3>📘 This Week’s Schedule</h3>
+          </div>
+          <span class="pill soft">Updated live</span>
+        </div>
+        <p class="dashboard-note">Tap any event on the calendar to open full details.</p>
+        <div class="dashboard-list">
+          <ul id="eventList"></ul>
+        </div>
       </aside>
     </main>
   </div>
@@ -77,6 +134,25 @@
         <option>Life Orientation</option>
       </select>
 
+      <label>Grade</label>
+      <select id="eventGrade">
+        <option value="">Select grade</option>
+        <option>Pre-K</option>
+        <option>K</option>
+        <option>Grade 1</option>
+        <option>Grade 2</option>
+        <option>Grade 3</option>
+        <option>Grade 4</option>
+        <option>Grade 5</option>
+        <option>Grade 6</option>
+        <option>Grade 7</option>
+        <option>Grade 8</option>
+        <option>Grade 9</option>
+        <option>Grade 10</option>
+        <option>Grade 11</option>
+        <option>Grade 12</option>
+      </select>
+
       <div class="modal-actions">
         <button id="saveEvent" class="primary-btn">Save</button>
         <button id="closeModal" class="cancel-btn">Cancel</button>
@@ -90,12 +166,29 @@
       <h2 id="lessonTitle">Lesson Details</h2>
       <p><b>Child:</b> <span id="lessonChild"></span></p>
       <p><b>Subject:</b> <span id="lessonSubject"></span></p>
+      <p><b>Grade:</b> <span id="lessonGrade"></span></p>
       <p><b>Time:</b> <span id="lessonTime"></span></p>
 
       <div id="lessonLinks"></div>
 
       <div class="modal-actions">
+        <button id="deleteEvent" class="cancel-btn" style="margin-right:auto;">Delete</button>
         <button id="closeLessonModal" class="primary-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parent PIN Modal for exiting kid view -->
+  <div id="kidPinModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Exit Kid View</h2>
+      <p class="dashboard-note">Parent PIN is required to return to the full planner.</p>
+      <input type="password" id="kidPinInput" maxlength="6"
+             placeholder="Enter parent PIN"
+             style="width:100%; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+      <div class="modal-actions">
+        <button id="kidPinCancel" class="cancel-btn">Cancel</button>
+        <button id="kidPinConfirm" class="primary-btn">Unlock</button>
       </div>
     </div>
   </div>
@@ -106,6 +199,17 @@
   </footer>
 
   <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    requireAuth().then(async () => {
+      const profile = await ensureProfileRecord();
+      if (!profile?.onboarding_complete) {
+        window.location.href = "setup.html";
+        return;
+      }
+      document.getElementById("logoutBtn").onclick = logout;
+    });
+  </script>
   <script src="js/planner.js"></script>
 </body>
 

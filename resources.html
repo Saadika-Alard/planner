@@ -5,48 +5,355 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lesson Library</title>
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
 </head>
 <body>
-  <nav>
-    <a href="index.html">📅 Planner</a>
-    <a href="pdf-manager.html">📘 Lesson Splitter</a>
-    <a href="resources.html" class="active">📚 Library</a>
+  <div id="pageLoader" class="page-loader hidden">
+    <div class="loader-ring"></div>
+  </div>
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon" aria-hidden="true">🌿</div>
+      <div class="brand-copy">
+        <span class="brand-eyebrow">Family dashboard</span>
+        <span class="brand-title">Homeschool Planner</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🗓️</span>
+        <div class="nav-label">
+          <span>Planner</span>
+          <small>Weekly schedule</small>
+        </div>
+      </a>
+      <a href="pdf-manager.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">✂️</span>
+        <div class="nav-label">
+          <span>Lesson Splitter</span>
+          <small>Pack builder</small>
+        </div>
+      </a>
+      <a href="resources.html" class="nav-link active">
+        <span class="nav-icon" aria-hidden="true">🎒</span>
+        <div class="nav-label">
+          <span>Library</span>
+          <small>Saved packs</small>
+        </div>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="ghost-btn">Log out</button>
+    </div>
   </nav>
 
-  <main style="padding: 2rem;">
-    <h1>📚 My Lesson Library</h1>
-    <div id="resourceList"></div>
+  <main class="page-shell">
+    <section class="page-hero">
+      <div>
+        <p class="eyebrow">Resource shelf</p>
+        <h1>📚 My Lesson Library</h1>
+        <p class="lede">All saved teaching and exercise packs live here for quick assigning, sharing, or clearing out old sets.</p>
+        <div class="hero-tags">
+          <span class="pill">Assign to calendar</span>
+          <span class="pill soft">Open PDFs in a new tab</span>
+          <span class="pill soft">Delete stale packs</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <p class="eyebrow">Organization tip</p>
+        <p class="lede">Use notes to record week numbers or special instructions for each pack.</p>
+      </div>
+    </section>
+
+    <section class="panel quick-stats">
+      <div class="stat-card">
+        <p class="eyebrow">Total packs</p>
+        <h2 id="statTotal">0</h2>
+      </div>
+      <div class="stat-card">
+        <p class="eyebrow">Teaching ready</p>
+        <h2 id="statTeach">0</h2>
+      </div>
+      <div class="stat-card">
+        <p class="eyebrow">Exercise ready</p>
+        <h2 id="statExercise">0</h2>
+      </div>
+      <div class="stat-card stat-filter">
+        <p class="eyebrow">Filter by subject</p>
+        <select id="subjectFilter">
+          <option value="all">All subjects</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Saved packs</p>
+          <h3>Lesson Packs</h3>
+        </div>
+        <span class="pill soft">Click to open</span>
+      </div>
+      <div id="resourceList" class="resource-grid"></div>
+    </section>
   </main>
 
+  <!-- Assign to Calendar Modal -->
+  <div id="assignModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Assign Lesson Pack</h2>
+      <label>Child</label>
+      <select id="assignChild">
+        <option value="">Select child</option>
+      </select>
+
+      <p class="dashboard-note" id="assignChildGradeDisplay">Grade: –</p>
+
+      <label>Start Date</label>
+      <input type="date" id="assignStartDate" />
+
+      <label>End Date</label>
+      <input type="date" id="assignEndDate" />
+
+      <div class="modal-actions">
+        <button id="confirmAssign" class="primary-btn">Assign</button>
+        <button id="cancelAssign" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
   <script>
-    const resources = JSON.parse(localStorage.getItem("resources")) || [];
+    const supaClient = getSupabase();
     const container = document.getElementById("resourceList");
+    const assignModal = document.getElementById("assignModal");
+    const confirmAssign = document.getElementById("confirmAssign");
+    const cancelAssign = document.getElementById("cancelAssign");
+    const statTotal = document.getElementById("statTotal");
+    const statTeach = document.getElementById("statTeach");
+    const statExercise = document.getElementById("statExercise");
+    const subjectFilter = document.getElementById("subjectFilter");
+    let selectedSubject = "all";
+    let resources = [];
+    let selectedResourceId = null;
+    let currentUser = null;
+    let childrenData = [];
 
-    if (resources.length === 0) {
-      container.innerHTML = "<p>No lesson packs uploaded yet.</p>";
-    } else {
-      resources.forEach(res => {
-        const teachingLink = res.teachingPack
-          ? `<a href="pdf-viewer.html?res=${res.id}&type=teaching" target="_blank">📘 Teaching Pack</a>`
+    function updateStats() {
+      const total = resources.length;
+      const teachingReady = resources.filter(r => r.teaching_pack_url).length;
+      const exerciseReady = resources.filter(r => r.exercise_pack_url).length;
+      if (statTotal) statTotal.textContent = total;
+      if (statTeach) statTeach.textContent = teachingReady;
+      if (statExercise) statExercise.textContent = exerciseReady;
+    }
+
+    function populateSubjects() {
+      if (!subjectFilter) return;
+      const subjects = Array.from(new Set(resources.map(r => r.subject || "General"))).sort();
+      subjectFilter.innerHTML = `<option value="all">All subjects</option>`;
+      subjects.forEach(sub => {
+        const opt = document.createElement("option");
+        opt.value = sub;
+        opt.textContent = sub;
+        subjectFilter.appendChild(opt);
+      });
+      subjectFilter.value = selectedSubject;
+    }
+
+    function renderResources() {
+      if (!container) return;
+      container.innerHTML = "";
+      populateSubjects();
+      updateStats();
+
+      const visible = selectedSubject === "all"
+        ? resources
+        : resources.filter(r => (r.subject || "General") === selectedSubject);
+
+      if (!visible.length) {
+        container.innerHTML = "<p class='muted'>No lesson packs uploaded yet.</p>";
+        return;
+      }
+
+      visible.forEach(res => {
+        const teachingLink = res.teaching_pack_url
+          ? `<a class="ghost-link" href="${res.teaching_pack_url}" target="_blank">📘 Teaching Pack</a>`
           : "";
-
-        const exerciseLink = res.exercisePack
-          ? `<a href="pdf-viewer.html?res=${res.id}&type=exercise" target="_blank">✏️ Exercise Pack</a>`
+        const exerciseLink = res.exercise_pack_url
+          ? `<a class="ghost-link" href="${res.exercise_pack_url}" target="_blank">✏️ Exercise Pack</a>`
           : "";
 
         container.innerHTML += `
           <div class="resource">
-            <h4>${res.title}</h4>
-            <div class="resource-links">
-              ${teachingLink}
-              ${exerciseLink}
+            <button class="delete-btn" data-id="${res.id}">✕</button>
+            <div class="resource-header">
+              <div>
+                <h4>${res.title}</h4>
+                <div class="resource-meta">
+                  ${res.grade ? `<span class="pill soft">${res.grade}</span>` : ""}
+                  <span class="pill soft" style="background:${window.getSubjectColor ? window.getSubjectColor(res.subject) : ''};">
+                    ${res.subject || "General"}
+                  </span>
+                  ${res.notes ? `<span class="pill">${res.notes}</span>` : ""}
+                </div>
+              </div>
             </div>
-            <p><small>Uploaded: ${new Date(res.uploaded).toLocaleDateString()}</small></p>
+            <div class="resource-body">
+              <div class="resource-section">
+                <p class="eyebrow">Status</p>
+                <div class="resource-badges">
+                  ${res.teaching_pack_url ? `<span class="pill soft">Teaching ready</span>` : `<span class="pill soft muted">No teaching pack</span>`}
+                  ${res.exercise_pack_url ? `<span class="pill soft">Exercise ready</span>` : `<span class="pill soft muted">No exercise pack</span>`}
+                </div>
+              </div>
+              <div class="resource-section">
+                <p class="eyebrow">Actions</p>
+                <div class="resource-actions">
+                  <button class="assign-btn" data-id="${res.id}">📅 Assign</button>
+                  <div class="resource-links">
+                    ${teachingLink}
+                    ${exerciseLink}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="resource-footer">
+              <span class="muted"><small>Uploaded: ${new Date(res.uploaded_at || Date.now()).toLocaleDateString()}</small></span>
+            </div>
           </div>
         `;
       });
     }
+
+    function handleAssign(resourceId) {
+      selectedResourceId = resourceId;
+      assignModal.classList.remove("hidden");
+      const childSelect = document.getElementById("assignChild");
+      const gradeDisplay = document.getElementById("assignChildGradeDisplay");
+      if (childSelect) {
+        childSelect.innerHTML = `<option value="">Select child</option>`;
+        (childrenData || []).forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.name;
+          opt.textContent = c.name;
+          childSelect.appendChild(opt);
+        });
+
+        childSelect.onchange = () => {
+          const selected = childrenData.find(c => c.name === childSelect.value);
+          if (gradeDisplay) {
+            gradeDisplay.textContent = selected && selected.grade
+              ? `Grade: ${selected.grade}`
+              : "Grade: –";
+          }
+        };
+
+        if (gradeDisplay) gradeDisplay.textContent = "Grade: –";
+        childSelect.value = "";
+      }
+      document.getElementById("assignStartDate").value = "";
+      document.getElementById("assignEndDate").value = "";
+    }
+
+    async function handleDelete(resourceId) {
+      if (!confirm("Delete this lesson pack?")) return;
+      await supaClient.from("resources").delete().eq("id", resourceId);
+      await fetchResources();
+    }
+
+    async function createAssignments() {
+      const child = document.getElementById("assignChild").value;
+      const start = document.getElementById("assignStartDate").value;
+      const end = document.getElementById("assignEndDate").value;
+      const childRow = (childrenData || []).find(c => c.name === child);
+      const grade = childRow?.grade || "";
+      const res = resources.find(r => r.id === selectedResourceId);
+      if (!res || !child || !start || !end) {
+        alert("Child and start/end dates are required");
+        return;
+      }
+
+      let cur = new Date(start);
+      const endDate = new Date(end);
+      const rows = [];
+
+      while (cur <= endDate) {
+        rows.push({
+          user_id: currentUser.id,
+          title: res.title,
+          child,
+          child_id: childRow ? childRow.id : null,
+          grade,
+          date: cur.toISOString().split("T")[0],
+          start_time: "",
+          end_time: "",
+          subject: res.subject || "General",
+          resource_id: res.id
+        });
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      const { error } = await supaClient.from("events").insert(rows);
+      if (error) {
+        console.error(error);
+        alert("Failed to assign pack to calendar");
+        return;
+      }
+      assignModal.classList.add("hidden");
+      alert("Lesson Pack assigned to calendar!");
+    }
+
+    async function fetchResources() {
+      showLoader();
+      const { data, error } = await supaClient
+        .from("resources")
+        .select("*")
+        .order("uploaded_at", { ascending: false });
+      if (error) {
+        console.error(error);
+        hideLoader();
+        return;
+      }
+      resources = data || [];
+      renderResources();
+      hideLoader();
+    }
+
+    if (subjectFilter) {
+      subjectFilter.addEventListener("change", () => {
+        selectedSubject = subjectFilter.value;
+        renderResources();
+      });
+    }
+
+    container.addEventListener("click", (e) => {
+      const assignBtn = e.target.closest(".assign-btn");
+      const deleteBtn = e.target.closest(".delete-btn");
+      if (assignBtn) handleAssign(assignBtn.dataset.id);
+      if (deleteBtn) handleDelete(deleteBtn.dataset.id);
+    });
+
+    confirmAssign.onclick = createAssignments;
+    cancelAssign.onclick = () => assignModal.classList.add("hidden");
+
+    requireAuth().then(async ({ user }) => {
+      const profile = await ensureProfileRecord();
+      if (!profile?.onboarding_complete) {
+        window.location.href = "setup.html";
+        return;
+      }
+      currentUser = user;
+      document.getElementById("logoutBtn").onclick = logout;
+       const { data: kids } = await supaClient
+        .from("children")
+        .select("*")
+        .order("name", { ascending: true });
+      childrenData = kids || [];
+      await fetchResources();
+    });
   </script>
 </body>
 </html>

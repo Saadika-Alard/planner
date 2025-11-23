@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup Classroom</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
+</head>
+<body class="auth-body" style="background: var(--light-bg);">
+  <div id="pageLoader" class="page-loader hidden">
+    <div class="loader-ring"></div>
+  </div>
+
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon" aria-hidden="true">🌿</div>
+      <div class="brand-copy">
+        <span class="brand-eyebrow">Family dashboard</span>
+        <span class="brand-title">Homeschool Planner</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🗓️</span>
+        <div class="nav-label">
+          <span>Planner</span>
+          <small>Weekly schedule</small>
+        </div>
+      </a>
+      <a href="pdf-manager.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">✂️</span>
+        <div class="nav-label">
+          <span>Lesson Splitter</span>
+          <small>Pack builder</small>
+        </div>
+      </a>
+      <a href="resources.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🎒</span>
+        <div class="nav-label">
+          <span>Library</span>
+          <small>Saved packs</small>
+        </div>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="ghost-btn">Log out</button>
+    </div>
+  </nav>
+
+  <div class="page-shell">
+    <div class="page-hero">
+      <div>
+        <p class="eyebrow" id="heroEyebrow">Welcome</p>
+        <h1 id="heroTitle">Set up your classroom</h1>
+        <p class="lede" id="heroLede">Add your kids, pick grades, and choose the subjects you teach. This keeps your planner tailored to your family.</p>
+        <div class="hero-tags">
+          <span class="pill">Real data only</span>
+          <span class="pill soft">Drag / click to curate subjects</span>
+          <span class="pill soft">Editable anytime</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <p class="eyebrow">Snapshot</p>
+        <div class="quick-stats">
+          <div class="stat-card">
+            <p class="eyebrow">Kids</p>
+            <h2 id="statKids">0</h2>
+          </div>
+          <div class="stat-card">
+            <p class="eyebrow">Active subjects</p>
+            <h2 id="statSubjects">0</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Step 1</p>
+          <h3>Kids & grades</h3>
+        </div>
+        <small class="muted" id="step1Hint">Add at least one child to continue</small>
+      </div>
+      <div class="resource-actions" style="flex-wrap: wrap; gap:0.75rem;">
+        <input id="childName" type="text" placeholder="Child name" style="flex:1; min-width:180px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+        <select id="childGrade" style="min-width:160px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+          <option value="">Select grade</option>
+          <option>Pre-K</option>
+          <option>Grade R (Reception)</option>
+          <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option><option>Grade 4</option><option>Grade 5</option><option>Grade 6</option><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+        </select>
+        <button id="addChild" class="primary-btn">Add child</button>
+      </div>
+      <div id="childList" class="resource-grid"></div>
+    </div>
+
+    <div class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Step 2</p>
+          <h3>Subjects</h3>
+        </div>
+        <small class="muted">Activate what you teach; add anything missing</small>
+      </div>
+      <div class="resource-actions" style="flex-wrap: wrap; gap:0.75rem;">
+        <input id="newSubject" type="text" placeholder="Add custom subject" style="flex:1; min-width:200px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+        <button id="addSubject" class="primary-btn">Add subject</button>
+      </div>
+      <div class="resource-body" style="margin-top:0.5rem;">
+        <div class="resource-section">
+          <p class="eyebrow">Active subjects</p>
+          <div id="activeSubjects" class="resource-badges"></div>
+        </div>
+        <div class="resource-section">
+          <p class="eyebrow">Later / optional</p>
+          <div id="inactiveSubjects" class="resource-badges"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Finish</p>
+          <h3>Save and continue</h3>
+        </div>
+      </div>
+      <div class="resource-body">
+        <div class="resource-section">
+          <p class="eyebrow">Parent PIN</p>
+          <p class="dashboard-note">Optional 4–6 digit code to exit kid view. Leave blank to disable the lock.</p>
+          <input id="parentPin" type="password" maxlength="6"
+                 placeholder="Parent PIN (4–6 digits)"
+                 style="max-width:220px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+        </div>
+      </div>
+      <div class="resource-actions" style="justify-content:flex-end; margin-top:0.5rem;">
+        <button id="saveSetup" class="primary-btn">Save & go to planner</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/setup.js"></script>
+</body>
+</html>

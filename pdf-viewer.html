@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>PDF Viewer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/supabaseClient.js"></script>
 
 <style>
   body {
@@ -110,92 +112,97 @@
 /* ---------------------------------------------------------
    Load Data
 ---------------------------------------------------------- */
+const supa = getSupabase();
 const params = new URLSearchParams(location.search);
 const resourceId = params.get("res");
 const requestedType = params.get("type");
+let pack = null;
 
-const storedResources = JSON.parse(localStorage.getItem("resources")) || [];
-const pack = storedResources.find(r => r.id === resourceId);
-
-if (!pack) {
-  document.getElementById("pdfTitle").textContent = "Resource not found";
-  throw new Error("Missing resource with id " + resourceId);
+async function loadPack() {
+  const { data, error } = await supa
+    .from("resources")
+    .select("title, teaching_pack_url, exercise_pack_url")
+    .eq("id", resourceId)
+    .single();
+  if (error || !data) {
+    document.getElementById("pdfTitle").textContent = "Resource not found";
+    throw new Error("Missing resource with id " + resourceId);
+  }
+  pack = data;
+  document.getElementById("pdfTitle").textContent = pack.title;
 }
-
-document.getElementById("pdfTitle").textContent = pack.title;
 
 /* ---------------------------------------------------------
    Base64 → Blob URL
 --------------------------------------------------------- */
-function safeBase64ToBlobUrl(base64) {
-  if (!base64) return "";
-
-  // Remove whitespace or invalid characters
-  base64 = base64.replace(/[^A-Za-z0-9+/=]/g, "");
-
-  const raw = atob(base64);
-  const bytes = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
-
-  return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+async function fetchPdfBytes(url) {
+  const res = await fetch(url);
+  const buf = await res.arrayBuffer();
+  return new Uint8Array(buf);
 }
 
 /* ---------------------------------------------------------
    Active PDF Pack (teaching or exercise)
 --------------------------------------------------------- */
-const hasTeaching = Boolean(pack.teachingPack);
-const hasExercise = Boolean(pack.exercisePack);
-
 let currentBase64;
 let currentLabel;
+let pdfUrl;
+let pdfBinary = null;
 
-if (requestedType === "exercise" && hasExercise) {
-  currentBase64 = pack.exercisePack;
-  currentLabel = "Exercise Pack";
-} else if (requestedType === "teaching" && hasTeaching) {
-  currentBase64 = pack.teachingPack;
-  currentLabel = "Teaching Pack";
-} else if (hasTeaching) {
-  currentBase64 = pack.teachingPack;
-  currentLabel = "Teaching Pack";
-} else {
-  currentBase64 = pack.exercisePack;
-  currentLabel = "Exercise Pack";
+async function initViewer() {
+  await loadPack();
+
+  const hasTeaching = Boolean(pack.teaching_pack_url);
+  const hasExercise = Boolean(pack.exercise_pack_url);
+
+  if (requestedType === "exercise" && hasExercise) {
+    currentBase64 = pack.exercise_pack_url;
+    currentLabel = "Exercise Pack";
+  } else if (requestedType === "teaching" && hasTeaching) {
+    currentBase64 = pack.teaching_pack_url;
+    currentLabel = "Teaching Pack";
+  } else if (hasTeaching) {
+    currentBase64 = pack.teaching_pack_url;
+    currentLabel = "Teaching Pack";
+  } else {
+    currentBase64 = pack.exercise_pack_url;
+    currentLabel = "Exercise Pack";
+  }
+
+  if (!currentBase64) {
+    document.getElementById("pdfTitle").textContent = "No PDF found for this resource";
+    throw new Error("Resource does not contain a PDF pack");
+  }
+
+  document.getElementById("pdfTitle").textContent = `${pack.title} — ${currentLabel}`;
+  await setPdf(currentBase64);
+
+  if (hasTeaching && hasExercise) {
+    document.getElementById("toggleBtn").style.display = "inline-block";
+  }
 }
 
-if (!currentBase64) {
-  document.getElementById("pdfTitle").textContent = "No PDF found for this resource";
-  throw new Error("Resource does not contain a PDF pack");
-}
-
-document.getElementById("pdfTitle").textContent = `${pack.title} — ${currentLabel}`;
-
-let pdfUrl = safeBase64ToBlobUrl(currentBase64);
-
-document.getElementById("pdfFrame").src = pdfUrl;
-
-if (hasTeaching && hasExercise) {
-  document.getElementById("toggleBtn").style.display = "inline-block";
+async function setPdf(url) {
+  pdfUrl = url;
+  document.getElementById("pdfFrame").src = pdfUrl;
+  pdfBinary = await fetchPdfBytes(pdfUrl);
+  generateThumbnails();
 }
 
 /* ---------------------------------------------------------
    Toggle Teaching / Exercise Pack
 --------------------------------------------------------- */
-function togglePack() {
-  if (currentBase64 === pack.teachingPack) {
-    currentBase64 = pack.exercisePack;
+async function togglePack() {
+  if (currentBase64 === pack.teaching_pack_url) {
+    currentBase64 = pack.exercise_pack_url;
     currentLabel = "Exercise Pack";
   } else {
-    currentBase64 = pack.teachingPack;
+    currentBase64 = pack.teaching_pack_url;
     currentLabel = "Teaching Pack";
   }
 
   document.getElementById("pdfTitle").textContent = `${pack.title} — ${currentLabel}`;
-
-  pdfUrl = safeBase64ToBlobUrl(currentBase64);
-  document.getElementById("pdfFrame").src = pdfUrl;
-
-  generateThumbnails();
+  await setPdf(currentBase64);
 }
 
 /* ---------------------------------------------------------
@@ -206,8 +213,7 @@ let selectedPages = [];
 async function generateThumbnails() {
   selectedPages = [];
 
-  const pdfBytes = Uint8Array.from(atob(currentBase64), c => c.charCodeAt(0));
-  const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+  const pdf = await pdfjsLib.getDocument({ data: pdfBinary }).promise;
 
   const container = document.getElementById("thumbContainer");
   container.innerHTML = "";
@@ -236,8 +242,6 @@ async function generateThumbnails() {
   }
 }
 
-generateThumbnails();
-
 /* ---------------------------------------------------------
    Downloads
 --------------------------------------------------------- */
@@ -249,15 +253,15 @@ function downloadOne() {
 }
 
 function downloadAll() {
-  if (pack.teachingPack) {
+  if (pack.teaching_pack_url) {
     const a = document.createElement("a");
-    a.href = safeBase64ToBlobUrl(pack.teachingPack);
+    a.href = pack.teaching_pack_url;
     a.download = pack.title + " - Teaching.pdf";
     a.click();
   }
-  if (pack.exercisePack) {
+  if (pack.exercise_pack_url) {
     const a = document.createElement("a");
-    a.href = safeBase64ToBlobUrl(pack.exercisePack);
+    a.href = pack.exercise_pack_url;
     a.download = pack.title + " - Exercise.pdf";
     a.click();
   }
@@ -274,8 +278,7 @@ async function printSelected() {
   if (!selectedPages.length)
     return alert("Select pages first.");
 
-  const bytes = Uint8Array.from(atob(currentBase64), c => c.charCodeAt(0));
-  const original = await PDFLib.PDFDocument.load(bytes);
+  const original = await PDFLib.PDFDocument.load(pdfBinary);
   const output = await PDFLib.PDFDocument.create();
 
   for (const p of selectedPages) {
@@ -293,6 +296,8 @@ async function printSelected() {
 
   iframe.onload = () => iframe.contentWindow.print();
 }
+
+initViewer();
 </script>
 
 </body>

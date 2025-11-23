@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login • Homeschool Planner</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="auth-body">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-icon" aria-hidden="true">🌿</div>
+        <div>
+          <p class="eyebrow">Homeschool Planner</p>
+          <h1>Welcome back</h1>
+          <p class="lede">Sign in to access your planner, lesson packs, and calendar.</p>
+        </div>
+      </div>
+
+      <div class="social-grid">
+        <div id="googleBtn" class="gsi-slot">
+          <button class="social-btn google" id="googleFallback">🔴 Continue with Google</button>
+        </div>
+      </div>
+
+      <div class="divider">
+        <span></span>
+        <p>or</p>
+        <span></span>
+      </div>
+
+      <form id="loginForm" class="auth-form">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" required />
+
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" required />
+
+        <button type="submit" class="primary-btn full">Sign in</button>
+      </form>
+
+      <p class="muted smallprint">
+        Need real OAuth? Add your Google client ID and set redirect URIs to your local domain (e.g. http://localhost:3000/login.html).
+      </p>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    const supaClient = getSupabase();
+    const GOOGLE_CLIENT_ID = "790609255918-bq3he4th4num8caru7ivggs1vegg5hr7.apps.googleusercontent.com";
+
+    function decodeJwt(token) {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function initGoogle() {
+      if (!window.google || !google.accounts || !google.accounts.id) return;
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response) => {
+          supaClient.auth.signInWithIdToken({
+            provider: "google",
+            token: response.credential
+          }).then(({ data, error }) => {
+            if (error) {
+              alert("Google sign-in failed. Check Supabase provider config.");
+              console.error(error);
+              return;
+            }
+            setLoggedIn({
+              email: data.session?.user?.email || "google-user",
+              provider: "Google"
+            });
+            window.location.href = "index.html";
+          });
+        }
+      });
+      google.accounts.id.renderButton(
+        document.getElementById("googleBtn"),
+        { theme: "outline", size: "large", width: "100%" }
+      );
+    }
+
+    // If Google script loads, initialize. Otherwise fallback button keeps behavior.
+    window.addEventListener("load", initGoogle);
+
+    // Demo login flow: stores a local profile and routes to index
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      alert("Email/password login is disabled. Use Google sign-in above.");
+    });
+
+    // Fallback Google button for local demo without OAuth
+    const googleFallback = document.getElementById("googleFallback");
+    googleFallback.addEventListener("click", () => {
+      setLoggedIn({ email: "google-demo@local", provider: "Google" });
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>

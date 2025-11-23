@@ -5,44 +5,156 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lesson Pack Manager</title>
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
 <body>
-  <nav>
-    <a href="index.html">📅 Planner</a>
-    <a href="pdf-manager.html" class="active">📘 Lesson Splitter</a>
-    <a href="resources.html">📚 Library</a>
+  <div id="pageLoader" class="page-loader hidden">
+    <div class="loader-ring"></div>
+  </div>
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon" aria-hidden="true">🌿</div>
+      <div class="brand-copy">
+        <span class="brand-eyebrow">Family dashboard</span>
+        <span class="brand-title">Homeschool Planner</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🗓️</span>
+        <div class="nav-label">
+          <span>Planner</span>
+          <small>Weekly schedule</small>
+        </div>
+      </a>
+      <a href="pdf-manager.html" class="nav-link active">
+        <span class="nav-icon" aria-hidden="true">✂️</span>
+        <div class="nav-label">
+          <span>Lesson Splitter</span>
+          <small>Pack builder</small>
+        </div>
+      </a>
+      <a href="resources.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🎒</span>
+        <div class="nav-label">
+          <span>Library</span>
+          <small>Saved packs</small>
+        </div>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="ghost-btn">Log out</button>
+    </div>
   </nav>
 
-  <main style="padding:2rem;">
-    <h1>📘 Lesson Pack Sorter</h1>
-
-    <section class="upload-box">
-      <label for="pdfUpload">Upload Lesson Plan (PDF)</label>
-      <input type="file" id="pdfUpload" accept="application/pdf" />
+  <main class="page-shell">
+    <section class="page-hero">
+      <div>
+        <p class="eyebrow">Prep room</p>
+        <h1>📘 Lesson Pack Sorter</h1>
+        <p class="lede">Upload a PDF, split it into teaching and exercise packs, then assign it to a learner.</p>
+        <div class="hero-tags">
+          <span class="pill">Drag to sort pages</span>
+          <span class="pill soft">Assign to calendar in one step</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <p class="eyebrow">Tip</p>
+        <p class="lede">Keep teaching and exercise pages balanced so every day has a clear activity.</p>
+      </div>
     </section>
 
-    <section id="sorterArea" class="hidden">
+    <section class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Upload</p>
+          <h3>Bring in a lesson plan</h3>
+        </div>
+        <small class="muted">PDF only • drag and drop sorting</small>
+      </div>
+      <div class="upload-box">
+        <label for="pdfUpload">Upload Lesson Plan (PDF)</label>
+        <input type="file" id="pdfUpload" accept="application/pdf" />
+      </div>
+    </section>
+
+    <section id="sorterArea" class="panel stack hidden">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Split by purpose</p>
+          <h3>Sort your pages</h3>
+        </div>
+        <span class="pill soft pageIndicator" id="pageIndicator">Unassigned: 0 / Total: 0</span>
+      </div>
+
       <div id="foldersRow">
         <div id="teachingFolder" class="dropFolder">
           📘 Teaching (<span id="teachCount">0</span>)
+          <p>Direct instruction, explanations, readings.</p>
         </div>
         <div id="exerciseFolder" class="dropFolder">
           ✏️ Exercises (<span id="exCount">0</span>)
+          <p>Practice sheets, reflections, checkpoints.</p>
         </div>
       </div>
 
-      <p id="pageIndicator" class="pageIndicator">Unassigned: 0 / Total: 0</p>
-
       <div id="thumbGrid" class="thumb-container" style="position: relative;"></div>
 
-      <button id="saveSplit" class="primary-btn" disabled>✅ Save Lesson Packs</button>
+      <div class="actions-row">
+        <button id="saveSplit" class="primary-btn" disabled>✅ Save Lesson Packs</button>
+      </div>
     </section>
 
-    <section id="resourceListSection">
-      <h3>Uploaded Lesson Packs</h3>
-      <div id="resourceList"></div>
+    <section id="resourceListSection" class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Library</p>
+          <h3>Uploaded Lesson Packs</h3>
+        </div>
+        <span class="pill soft">Assign directly</span>
+      </div>
+      <div id="resourceList" class="resource-grid"></div>
+    </section>
+
+    <section class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Extra resources</p>
+          <h3>Quick add worksheets & links</h3>
+        </div>
+        <span class="pill soft">Skip splitting, just assign</span>
+      </div>
+      <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+        <input id="extraTitle" type="text" placeholder="Resource title"
+               style="flex:1; min-width:200px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+        <select id="extraSubject"
+                style="min-width:160px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+          <option value="">Subject (optional)</option>
+        </select>
+        <select id="extraGrade"
+                style="min-width:160px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+          <option value="">Grade (optional)</option>
+        </select>
+      </div>
+      <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+        <select id="extraType"
+                style="min-width:160px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+          <option value="link">External link</option>
+          <option value="pdf">Upload PDF</option>
+        </select>
+        <input id="extraLink" type="url" placeholder="https://platform-or-worksheet-link"
+               style="flex:1; min-width:220px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+        <input id="extraFile" type="file" accept="application/pdf"
+               style="min-width:220px; padding:0.4rem; border-radius:10px; border:1px dashed #dfe6d4; background:#fbfdf8; display:none;" />
+      </div>
+      <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+        <textarea id="extraNotes" rows="2" placeholder="Notes (optional)"
+                  style="flex:1; min-width:220px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;"></textarea>
+        <button id="saveExtraResource" class="primary-btn">Save resource</button>
+      </div>
     </section>
 
     <!-- Save Lesson Modal -->
@@ -53,15 +165,11 @@
         <input type="text" id="modalTitle" placeholder="Lesson Pack Name" />
 
         <label>Subject</label>
-        <select id="modalSubject">
-          <option>English</option>
-          <option>Math</option>
-          <option>Science</option>
-          <option>History</option>
-          <option>Geography</option>
-          <option>Creative Arts</option>
-          <option>Life Orientation</option>
-          <option>General</option>
+        <select id="modalSubject"></select>
+
+        <label>Intended grade (optional)</label>
+        <select id="modalGrade">
+          <option value="">All grades</option>
         </select>
 
         <label>Notes (optional)</label>
@@ -92,10 +200,9 @@
         <h2>Assign Lesson Pack</h2>
         <label>Child</label>
         <select id="assignChild">
-          <option>Emma</option>
-          <option>Liam</option>
-          <option>Olivia</option>
+          <option value="">Select child</option>
         </select>
+        <p class="dashboard-note" id="assignChildGradeDisplay">Grade: –</p>
 
         <label>Start Date</label>
         <input type="date" id="assignStartDate" />
@@ -113,6 +220,17 @@
   </main>
 
   <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    requireAuth().then(async () => {
+      const profile = await ensureProfileRecord();
+      if (!profile?.onboarding_complete) {
+        window.location.href = "setup.html";
+        return;
+      }
+      document.getElementById("logoutBtn").onclick = logout;
+    });
+  </script>
   <script src="js/pdfManager.js"></script>
 </body>
 </html>
