@@ -290,7 +290,7 @@ async function saveLessonPacks() {
         exerciseUrl = await uploadToStorage(`${currentUser.id}/${ts}-exercise.pdf`, exercisePack);
       }
     } catch (err) {
-      alert("Upload failed. Make sure a 'packs' storage bucket exists and is public.");
+      window.showToast("Upload failed. Make sure a 'packs' storage bucket exists and is public.", "error");
       console.error(err);
       hideLoader();
       return;
@@ -311,7 +311,7 @@ async function saveLessonPacks() {
       .single();
 
     if (error) {
-      alert("Failed to save pack to Supabase");
+      window.showToast("Failed to save pack to Supabase.", "error");
       console.error(error);
       hideLoader();
       return;
@@ -322,7 +322,7 @@ async function saveLessonPacks() {
     await fetchResources();
     hideLoader();
 
-    alert("Lesson Pack Saved!");
+    window.showToast("Lesson pack saved to library.", "success");
   };
 
   document.getElementById("cancelSave").onclick = () =>
@@ -432,6 +432,8 @@ function handleResourceClick(e) {
       const child = document.getElementById("assignChild").value;
       const start = document.getElementById("assignStartDate").value;
       const end = document.getElementById("assignEndDate").value;
+      const durationSelect = document.getElementById("assignDuration");
+      const duration = durationSelect ? parseInt(durationSelect.value, 10) : 60;
       const childRow = (childrenData || []).find(c => c.name === child);
       const grade = childRow?.grade || "";
 
@@ -455,6 +457,7 @@ function handleResourceClick(e) {
           date: cur.toISOString().split("T")[0],
           start_time: "",
           end_time: "",
+          duration_minutes: isNaN(duration) ? 60 : duration,
           subject: res.subject || "General",
           resource_id: resourceId
         });
@@ -463,12 +466,12 @@ function handleResourceClick(e) {
 
       supaClient.from("events").insert(rows).then(({ error }) => {
         if (error) {
-          alert("Failed to assign lesson");
           console.error(error);
+          window.showToast("Failed to assign lesson.", "error");
           return;
         }
         modal.classList.add("hidden");
-        alert("Lesson Assigned!");
+        window.showToast("Lesson assigned to calendar.", "success");
       });
     };
 

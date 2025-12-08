@@ -302,8 +302,6 @@ main.page-shell {
   gap: 0.75rem;
   height: 64px;
   overflow: hidden;
-  max-width: 100%;
-  width: 44px;
   justify-content: center;
 }
 
@@ -329,12 +327,18 @@ main.page-shell {
   opacity: 0;
   overflow: hidden;
   white-space: nowrap;
-  transition: max-width 0.2s ease, opacity 0.2s ease;
+    transition: max-width 0.2s ease-out, opacity 0.2s ease-out;
+
+}
+
+.planner {
+  margin-left: 55px;
 }
 
 .top-nav:hover .brand-copy {
   max-width: 160px;
   opacity: 1;
+  transition: max-width 0.5s ease-in, opacity 0.2s ease-in;
 }
 
 .top-nav:hover .nav-brand {
@@ -517,7 +521,6 @@ main {
   grid-template-columns: 2fr 1fr;
   gap: 1rem;
   padding: 1rem 2rem;
-  margin-left: 122px;
 }
 /* 🗓️ Calendar Grid */
 #calendar {

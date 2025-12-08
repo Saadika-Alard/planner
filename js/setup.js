@@ -247,6 +247,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const btn = e.target.closest(".delete-btn");
     if (btn) {
       const idx = +btn.dataset.idx;
+      const name = children[idx]?.name || "this child";
+      const ok = window.confirm(`Remove ${name} from your classroom? Their events and records will remain but won't be linked in filters.`);
+      if (!ok) return;
       children.splice(idx, 1);
       renderChildren();
     }

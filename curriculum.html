@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curriculum & Portfolio • Homeschool Planner</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
+</head>
+<body>
+  <div id="pageLoader" class="page-loader hidden">
+    <div class="loader-ring"></div>
+  </div>
+
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon" aria-hidden="true">🌿</div>
+      <div class="brand-copy">
+        <span class="brand-eyebrow">Family dashboard</span>
+        <span class="brand-title">Homeschool Planner</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🗓️</span>
+        <div class="nav-label">
+          <span>Planner</span>
+          <small>Weekly schedule</small>
+        </div>
+      </a>
+      <a href="pdf-manager.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">✂️</span>
+        <div class="nav-label">
+          <span>Lesson Splitter</span>
+          <small>Pack builder</small>
+        </div>
+      </a>
+      <a href="resources.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🎒</span>
+        <div class="nav-label">
+          <span>Library</span>
+          <small>Saved packs</small>
+        </div>
+      </a>
+      <a href="attendance.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">⏱️</span>
+        <div class="nav-label">
+          <span>Hours</span>
+          <small>Attendance</small>
+        </div>
+      </a>
+      <a href="assessments.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📊</span>
+        <div class="nav-label">
+          <span>Assessments</span>
+          <small>Marks & results</small>
+        </div>
+      </a>
+      <a href="curriculum.html" class="nav-link active">
+        <span class="nav-icon" aria-hidden="true">📚</span>
+        <div class="nav-label">
+          <span>Curriculum</span>
+          <small>Topics & portfolio</small>
+        </div>
+      </a>
+      <a href="portfolio.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📁</span>
+        <div class="nav-label">
+          <span>Portfolio</span>
+          <small>Full record</small>
+        </div>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="nav-link" type="button">
+        <span class="nav-icon" aria-hidden="true">🚪</span>
+        <div class="nav-label">
+          <span>Log out</span>
+          <small>Exit parent view</small>
+        </div>
+      </button>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <div class="page-columns">
+      <section class="panel stack">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Plan</p>
+            <h3>Curriculum topics</h3>
+          </div>
+          <span class="pill soft">Map your year by subject</span>
+        </div>
+
+        <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+          <select id="curChildFilter"
+                  style="min-width:180px; padding:0.5rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+            <option value="all">All kids / grade based</option>
+          </select>
+          <select id="curSubjectFilter"
+                  style="min-width:180px; padding:0.5rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+            <option value="all">All subjects</option>
+          </select>
+          <input id="curYearFilter" type="number" min="2000" max="2100"
+                 style="width:90px; padding:0.45rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+          <select id="curTermFilter"
+                  style="min-width:150px; padding:0.45rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+            <option value="all">All terms</option>
+            <option value="term1">Term 1</option>
+            <option value="term2">Term 2</option>
+            <option value="term3">Term 3</option>
+            <option value="term4">Term 4</option>
+            <option value="full_year">Full year</option>
+          </select>
+        </div>
+
+        <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+          <input id="curNewTopic" type="text" placeholder="Add curriculum topic (e.g. Fractions: add and subtract)"
+                 style="flex:1; min-width:220px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+          <textarea id="curNewDescription" rows="1" placeholder="Description / notes (optional)"
+                    style="flex:1; min-width:220px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;"></textarea>
+          <button id="curAddTopicBtn" class="primary-btn">Add topic</button>
+        </div>
+        <p class="muted" style="font-size:0.8rem; margin-top:-0.35rem;">
+          At minimum, choose a year and subject and add a topic name. You can later attach packs, assessments, and evidence from the portfolio panel.
+        </p>
+
+        <div id="curTopicList" class="dashboard-list" style="max-height:none;">
+          <!-- topic cards injected here -->
+        </div>
+      </section>
+
+      <section class="panel stack">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Portfolio</p>
+            <h3 id="curPortfolioHeading">Select a topic</h3>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="pill soft" id="curPortfolioBadge">No topic selected</span>
+            <button id="curReportBtn" class="ghost-btn ghost-btn-small" type="button">Curriculum report</button>
+          </div>
+        </div>
+        <p class="lede" style="font-size:0.85rem;">
+          Attach lesson packs, assessments, and extra evidence (PDFs, images, videos, audio, or links) to show how this topic was taught and assessed.
+        </p>
+
+        <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem; margin-top:0.75rem;">
+          <select id="curResourceSelect"
+                  style="min-width:200px; padding:0.5rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+            <option value="">Link a saved pack (optional)</option>
+          </select>
+          <select id="curAssessmentSelect"
+                  style="min-width:200px; padding:0.5rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+            <option value="">Link an assessment (optional)</option>
+          </select>
+        </div>
+
+        <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+          <select id="curEvidenceType"
+                  style="min-width:140px; padding:0.45rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+            <option value="file">File upload</option>
+            <option value="link">External link</option>
+          </select>
+          <input id="curEvidenceFile" type="file"
+                 accept="application/pdf,image/*,video/*,audio/*"
+                 style="flex:1; min-width:200px; padding:0.4rem; border-radius:10px; border:1px dashed #dfe6d4; background:#fbfdf8;" />
+          <input id="curEvidenceUrl" type="url" placeholder="https://…"
+                 style="flex:1; min-width:200px; padding:0.45rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8; display:none;" />
+        </div>
+
+        <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+          <textarea id="curEvidenceNote" rows="2" placeholder="Note for this piece of evidence (optional)"
+                    style="flex:1; min-width:220px; padding:0.55rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;"></textarea>
+          <button id="curAddEvidenceBtn" class="primary-btn" disabled>Add to portfolio</button>
+        </div>
+
+        <div class="dashboard-list" style="max-height:none; margin-top:0.5rem;">
+          <ul id="curEvidenceList" style="list-style:none; margin:0; padding:0;"></ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/curriculum.js"></script>
+</body>
+</html>

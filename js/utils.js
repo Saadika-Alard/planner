@@ -72,6 +72,50 @@ window.saveData = function (key, data) {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
+// Toast notifications aligned with app styling
+window.showToast = function (message, type = "info") {
+  if (!message) return;
+  let toast = document.getElementById("appToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "appToast";
+    toast.className = "app-toast";
+    const inner = document.createElement("div");
+    inner.className = "app-toast-inner";
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "app-toast-icon";
+    const textSpan = document.createElement("span");
+    textSpan.className = "app-toast-text";
+    inner.appendChild(iconSpan);
+    inner.appendChild(textSpan);
+    toast.appendChild(inner);
+    document.body.appendChild(toast);
+  }
+
+  const iconSpan = toast.querySelector(".app-toast-icon");
+  const textSpan = toast.querySelector(".app-toast-text");
+  textSpan.textContent = message;
+
+  let icon = "ℹ️";
+  if (type === "success") icon = "✅";
+  else if (type === "error") icon = "⚠️";
+  else if (type === "warning") icon = "⚠️";
+  if (iconSpan) iconSpan.textContent = icon;
+
+  toast.setAttribute("data-type", type);
+  toast.classList.add("app-toast-visible");
+
+  const existing = toast.getAttribute("data-timeout");
+  if (existing) {
+    clearTimeout(Number(existing));
+  }
+  const timeout = setTimeout(() => {
+    toast.classList.remove("app-toast-visible");
+    toast.removeAttribute("data-timeout");
+  }, 3500);
+  toast.setAttribute("data-timeout", String(timeout));
+};
+
 window.showLoader = function () {
   const el = document.getElementById("pageLoader");
   if (el) el.classList.remove("hidden");

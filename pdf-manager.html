@@ -44,9 +44,50 @@
           <small>Saved packs</small>
         </div>
       </a>
+      <a href="attendance.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">⏱️</span>
+        <div class="nav-label">
+          <span>Hours</span>
+          <small>Attendance</small>
+        </div>
+      </a>
+      <a href="assessments.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📊</span>
+        <div class="nav-label">
+          <span>Assessments</span>
+          <small>Marks & results</small>
+        </div>
+      </a>
+      <a href="curriculum.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📚</span>
+        <div class="nav-label">
+          <span>Curriculum</span>
+          <small>Topics & portfolio</small>
+        </div>
+      </a>
+      <a href="portfolio.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📁</span>
+        <div class="nav-label">
+          <span>Portfolio</span>
+          <small>Full record</small>
+        </div>
+      </a>
+      <a href="attendance.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">⏱️</span>
+        <div class="nav-label">
+          <span>Hours</span>
+          <small>Attendance</small>
+        </div>
+      </a>
     </div>
     <div class="nav-actions">
-      <button id="logoutBtn" class="ghost-btn">Log out</button>
+      <button id="logoutBtn" class="nav-link" type="button">
+        <span class="nav-icon" aria-hidden="true">🚪</span>
+        <div class="nav-label">
+          <span>Log out</span>
+          <small>Exit parent view</small>
+        </div>
+      </button>
     </div>
   </nav>
 
@@ -203,6 +244,15 @@
           <option value="">Select child</option>
         </select>
         <p class="dashboard-note" id="assignChildGradeDisplay">Grade: –</p>
+
+        <label>Duration</label>
+        <select id="assignDuration">
+          <option value="30">30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60" selected>60 minutes</option>
+          <option value="90">90 minutes</option>
+          <option value="120">120 minutes</option>
+        </select>
 
         <label>Start Date</label>
         <input type="date" id="assignStartDate" />

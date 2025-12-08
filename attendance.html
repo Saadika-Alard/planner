@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hours & Attendance</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
+</head>
+<body>
+  <div id="pageLoader" class="page-loader hidden">
+    <div class="loader-ring"></div>
+  </div>
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-icon" aria-hidden="true">🌿</div>
+      <div class="brand-copy">
+        <span class="brand-eyebrow">Family dashboard</span>
+        <span class="brand-title">Homeschool Planner</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🗓️</span>
+        <div class="nav-label">
+          <span>Planner</span>
+          <small>Weekly schedule</small>
+        </div>
+      </a>
+      <a href="pdf-manager.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">✂️</span>
+        <div class="nav-label">
+          <span>Lesson Splitter</span>
+          <small>Pack builder</small>
+        </div>
+      </a>
+      <a href="resources.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">🎒</span>
+        <div class="nav-label">
+          <span>Library</span>
+          <small>Saved packs</small>
+        </div>
+      </a>
+      <a href="attendance.html" class="nav-link active">
+        <span class="nav-icon" aria-hidden="true">⏱️</span>
+        <div class="nav-label">
+          <span>Hours</span>
+          <small>Attendance</small>
+        </div>
+      </a>
+      <a href="assessments.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📊</span>
+        <div class="nav-label">
+          <span>Assessments</span>
+          <small>Marks & results</small>
+        </div>
+      </a>
+      <a href="curriculum.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📚</span>
+        <div class="nav-label">
+          <span>Curriculum</span>
+          <small>Topics & portfolio</small>
+        </div>
+      </a>
+      <a href="portfolio.html" class="nav-link">
+        <span class="nav-icon" aria-hidden="true">📁</span>
+        <div class="nav-label">
+          <span>Portfolio</span>
+          <small>Full record</small>
+        </div>
+      </a>
+    </div>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="nav-link" type="button">
+        <span class="nav-icon" aria-hidden="true">🚪</span>
+        <div class="nav-label">
+          <span>Log out</span>
+          <small>Exit parent view</small>
+        </div>
+      </button>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <section class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Overview</p>
+          <h3>Hours & attendance</h3>
+        </div>
+        <span class="pill soft" id="periodLabel"></span>
+      </div>
+      <div class="resource-actions" style="flex-wrap:wrap; gap:0.75rem;">
+        <select id="hoursChildSelect"
+                style="min-width:180px; padding:0.5rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;">
+          <option value="all">All kids</option>
+        </select>
+        <input type="month" id="hoursMonth"
+               style="padding:0.5rem; border-radius:10px; border:1px solid #dfe6d4; background:#fbfdf8;" />
+      </div>
+      <div class="quick-stats" id="hoursStats">
+        <div class="stat-card">
+          <p class="eyebrow">Total hours</p>
+          <h2 id="hoursTotal">0</h2>
+        </div>
+        <div class="stat-card">
+          <p class="eyebrow">Days with work</p>
+          <h2 id="hoursDays">0</h2>
+        </div>
+        <div class="stat-card">
+          <p class="eyebrow">Export</p>
+          <button id="hoursCsv" class="ghost-btn ghost-btn-small">Download CSV</button>
+          <button id="hoursPdf" class="ghost-btn ghost-btn-small">Download PDF</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel stack">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">By day</p>
+          <h3>Attendance details</h3>
+        </div>
+        <span class="pill soft">Minutes per day</span>
+      </div>
+      <div class="dashboard-list" style="max-height:none;">
+        <table id="hoursTable" style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:0.35rem 0.5rem;">Date</th>
+              <th style="text-align:left; padding:0.35rem 0.5rem;">Child</th>
+              <th style="text-align:left; padding:0.35rem 0.5rem;">Minutes</th>
+              <th style="text-align:left; padding:0.35rem 0.5rem;">Subjects</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/attendance.js"></script>
+</body>
+</html>
