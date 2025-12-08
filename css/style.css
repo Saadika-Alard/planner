@@ -44,12 +44,17 @@ body {
   border: 6px solid #dfe6d4;
   border-top-color: var(--primary);
   animation: spin 0.8s linear infinite;
-  box-shadow: 0 10px 24px -16px rgba(0,0,0,0.35);
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.35);
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .app-toast {
@@ -103,12 +108,13 @@ body {
   font-weight: 600;
   color: #2f2f2f;
   cursor: pointer;
-  box-shadow: 0 10px 20px -18px rgba(0,0,0,0.35);
+  box-shadow: 0 10px 20px -18px rgba(0, 0, 0, 0.35);
   transition: transform 0.1s ease, box-shadow 0.15s ease;
 }
+
 .ghost-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px -20px rgba(0,0,0,0.35);
+  box-shadow: 0 14px 28px -20px rgba(0, 0, 0, 0.35);
 }
 
 .ghost-btn-small {
@@ -187,7 +193,7 @@ main.page-shell {
   border: 1px solid #e2e9d6;
   border-radius: 12px;
   padding: 0.9rem;
-  box-shadow: 0 12px 26px -22px rgba(0,0,0,0.35);
+  box-shadow: 0 12px 26px -22px rgba(0, 0, 0, 0.35);
 }
 
 .stat-card h2 {
@@ -222,7 +228,7 @@ main.page-shell {
   padding-bottom: 0.75rem;
 }
 
-.panel.stack > *:not(:last-child) {
+.panel.stack>*:not(:last-child) {
   margin-bottom: 1rem;
 }
 
@@ -327,7 +333,7 @@ main.page-shell {
   opacity: 0;
   overflow: hidden;
   white-space: nowrap;
-    transition: max-width 0.2s ease-out, opacity 0.2s ease-out;
+  transition: max-width 0.2s ease-out, opacity 0.2s ease-out;
 
 }
 
@@ -494,6 +500,7 @@ header {
   cursor: pointer;
   font-weight: 500;
 }
+
 .primary-btn:hover {
   background: var(--primary);
   color: white;
@@ -510,6 +517,7 @@ header {
   box-shadow: 0 10px 22px -18px rgba(0, 0, 0, 0.4);
   transition: transform 0.1s ease, box-shadow 0.15s ease;
 }
+
 .cancel-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px -18px rgba(0, 0, 0, 0.45);
@@ -522,6 +530,7 @@ main {
   gap: 1rem;
   padding: 1rem 2rem;
 }
+
 /* 🗓️ Calendar Grid */
 #calendar {
   display: grid;
@@ -530,10 +539,17 @@ main {
   margin-top: 1rem;
 }
 
+@media (max-width: 768px) {
+  #calendar {
+    grid-template-columns: 1fr;
+    /* List view on mobile */
+  }
+}
+
 .day {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   padding: 0.5rem;
   min-height: 90px;
   position: relative;
@@ -561,13 +577,15 @@ main {
 .calendar-event {
   padding: 3px 6px;
   border-radius: 6px;
-  background: #e5e7eb; /* default neutral – overridden via inline style */
+  background: #e5e7eb;
+  /* default neutral – overridden via inline style */
   color: #111827;
   font-size: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-left: 4px solid #9ca3af; /* child color accent */
+  border-left: 4px solid #9ca3af;
+  /* child color accent */
 }
 
 /* 🕓 Calendar time display */
@@ -596,8 +614,9 @@ main {
   color: var(--text);
   text-decoration: none;
   font-weight: 500;
-  box-shadow: 0 10px 24px -20px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 24px -20px rgba(0, 0, 0, 0.25);
 }
+
 .lesson-link:hover {
   background: #eef2e3;
 }
@@ -618,12 +637,36 @@ main {
 
 
 /* 🎨 Child Colors */
-.child-emma { background: #a78bfa; }    /* soft lavender */
-.child-liam { background: #60a5fa; }    /* blue */
-.child-ava { background: #f87171; }     /* red */
-.child-noah { background: #34d399; }    /* green */
-.child-olivia { background: #fbbf24; }  /* amber */
-.child-default { background: #9ca3af; } /* gray */
+.child-emma {
+  background: #a78bfa;
+}
+
+/* soft lavender */
+.child-liam {
+  background: #60a5fa;
+}
+
+/* blue */
+.child-ava {
+  background: #f87171;
+}
+
+/* red */
+.child-noah {
+  background: #34d399;
+}
+
+/* green */
+.child-olivia {
+  background: #fbbf24;
+}
+
+/* amber */
+.child-default {
+  background: #9ca3af;
+}
+
+/* gray */
 
 
 /* Dashboard */
@@ -631,7 +674,7 @@ main {
   background: linear-gradient(180deg, #f7faf1, #ffffff);
   border-radius: 16px;
   padding: 1.2rem;
-  box-shadow: 0 16px 40px -24px rgba(0,0,0,0.25);
+  box-shadow: 0 16px 40px -24px rgba(0, 0, 0, 0.25);
   border: 1px solid #e5ead8;
   display: flex;
   flex-direction: column;
@@ -657,7 +700,7 @@ main {
   border: 1px solid #e5ead8;
   border-radius: 12px;
   padding: 0.5rem;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   flex: 1;
   overflow: auto;
 }
@@ -686,7 +729,7 @@ main {
   margin-left: 6px;
   margin-right: 2px;
   border: 2px solid #ffffff;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 
 .child-filter-bar {
@@ -714,7 +757,7 @@ main {
   background: linear-gradient(180deg, #ffffff, #f7f8f3);
   font-weight: 600;
   color: #2f2f2f;
-  box-shadow: 0 10px 20px -18px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 20px -18px rgba(0, 0, 0, 0.25);
 }
 
 .child-chip {
@@ -729,13 +772,13 @@ main {
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
-  box-shadow: 0 10px 20px -18px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 20px -18px rgba(0, 0, 0, 0.25);
   transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .child-chip:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px -22px rgba(0,0,0,0.3);
+  box-shadow: 0 14px 28px -22px rgba(0, 0, 0, 0.3);
 }
 
 .child-chip.active {
@@ -762,7 +805,7 @@ main {
 }
 
 .child-chip.active .child-chip-dot {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
 
@@ -813,12 +856,13 @@ main {
   border: 1px solid #d6dfc5;
   background: #ffffff;
 }
+
 .resource {
   background: linear-gradient(180deg, #ffffff, #f7faf1);
   border-radius: 14px;
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 14px 28px -24px rgba(0,0,0,0.35);
+  box-shadow: 0 14px 28px -24px rgba(0, 0, 0, 0.35);
   border: 1px solid #e2e9d6;
   position: relative;
 }
@@ -924,12 +968,16 @@ main {
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.modal.hidden { display: none; }
+
+.modal.hidden {
+  display: none;
+}
+
 .modal-content {
   background: white;
   padding: 1.5rem;
@@ -954,7 +1002,7 @@ main {
   background: white;
   padding: 0.5rem;
   width: 140px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-align: center;
   font-size: 0.8rem;
 }
@@ -974,10 +1022,11 @@ main {
   border-radius: 10px;
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.group-card input, .group-card select {
+.group-card input,
+.group-card select {
   width: 100%;
   margin-bottom: 6px;
   padding: 4px;
@@ -1004,6 +1053,7 @@ main {
   transition: background 0.3s, transform 0.2s;
   min-width: 260px;
 }
+
 .dropFolder.dragover {
   background: var(--accent);
   transform: scale(1.03);
@@ -1021,11 +1071,12 @@ main {
   background: white;
   padding: 0.3rem;
   width: 120px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-align: center;
   cursor: pointer;
   user-select: none;
 }
+
 .page-thumb.selected {
   border: 2px solid var(--primary);
   box-shadow: 0 0 5px var(--primary);
@@ -1048,10 +1099,12 @@ main {
   transition: background 0.3s, transform 0.2s;
   min-height: 0;
 }
+
 .dropFolder.dragover {
   background: var(--accent);
   transform: scale(1.03);
 }
+
 .dropFolder p {
   font-size: 0.8rem;
   margin: 0.5rem 0 0 0;
@@ -1070,11 +1123,12 @@ main {
   background: white;
   padding: 0.3rem;
   width: 120px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-align: center;
   cursor: pointer;
   user-select: none;
 }
+
 .page-thumb.selected {
   border: 2px solid var(--primary);
   box-shadow: 0 0 5px var(--primary);
@@ -1093,7 +1147,7 @@ main {
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1109,7 +1163,7 @@ main {
   padding: 1.5rem;
   border-radius: 14px;
   width: 360px;
-  box-shadow: 0 22px 48px -28px rgba(0,0,0,0.55), 0 1px 0 #ffffff;
+  box-shadow: 0 22px 48px -28px rgba(0, 0, 0, 0.55), 0 1px 0 #ffffff;
   border: 1px solid #e3ead6;
 }
 
@@ -1165,6 +1219,7 @@ main {
   background: #ef4444;
   color: white;
 }
+
 #deleteModal .primary-btn:hover {
   background: #dc2626;
 }

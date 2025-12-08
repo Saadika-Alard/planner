@@ -106,6 +106,10 @@ function getUserSupabase(req) {
   });
 }
 
+app.get("/", (req, res) => {
+  res.send("Homeschool Planner Backend is running. Access the frontend to use the app.");
+});
+
 app.get("/health", (req, res) => {
   res.json({ ok: true });
 });

@@ -250,7 +250,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     for (let d = 1; d <= last.getDate(); d++) {
-
       const cell = document.createElement("div");
       cell.className = "day";
 
@@ -261,6 +260,44 @@ document.addEventListener("DOMContentLoaded", async () => {
         String(month + 1).padStart(2, "0") +
         "-" +
         String(d).padStart(2, "0");
+
+      /* ---------------------
+         Make Drop Zone
+      --------------------- */
+      cell.ondragover = (e) => {
+        e.preventDefault(); // Necessary to allow dropping
+        cell.classList.add("drag-over");
+      };
+
+      cell.ondragleave = () => {
+        cell.classList.remove("drag-over");
+      };
+
+      cell.ondrop = async (e) => {
+        e.preventDefault();
+        cell.classList.remove("drag-over");
+        const eventId = e.dataTransfer.getData("text/plain");
+
+        if (!eventId) return;
+
+        // Optimistic UI update could go here, but for safety let's just await DB
+        // Fetch event to check if we need to preserve time? for now just update date.
+        // Actually, let's just update the date.
+
+        const { error } = await supa
+          .from("events")
+          .update({ date: iso })
+          .eq("id", eventId);
+
+        if (error) {
+          console.error("Drop update failed", error);
+          alert("Failed to move event");
+          return;
+        }
+
+        await loadDataFromSupabase();
+        renderCalendar();
+      };
 
       cell.innerHTML = `<span class="date-num">${d}</span>`;
 
@@ -281,6 +318,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         todays.forEach(ev => {
 
           const chip = document.createElement("div");
+          chip.draggable = true; // Enable drag
+          chip.ondragstart = (e) => {
+            e.dataTransfer.setData("text/plain", ev.id);
+            e.dataTransfer.effectAllowed = "move";
+          };
           const slug = (ev.child || "default")
             .toString()
             .trim()
@@ -408,6 +450,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const duration = document.getElementById("eventDuration")
       ? parseInt(document.getElementById("eventDuration").value, 10)
       : 60;
+    const repeatMode = document.getElementById("eventRepeat").value;
+    const repeatCount = parseInt(document.getElementById("eventRepeatCount").value, 10) || 1;
 
     if (!title || !date || !childId || !subject || !grade) {
       alert("All fields required");
@@ -417,29 +461,78 @@ document.addEventListener("DOMContentLoaded", async () => {
     const childRow = childrenData.find(c => c.id === childId);
     const childName = childRow ? childRow.name : "";
 
-    supa.from("events").insert({
-      user_id: currentUser.id,
-      title,
-      date,
-      child: childName,
-      child_id: childId,
-      subject,
-      grade,
-      start_time: startTime,
-      end_time: endTime,
-      duration_minutes: isNaN(duration) ? 60 : duration,
-      resource_id: null
-    }).then(async ({ error }) => {
-      if (error) {
-        alert("Failed to save event");
-        console.error(error);
-        return;
+    // Helper to add days
+    const addDays = (dStr, days) => {
+      const d = new Date(dStr);
+      d.setDate(d.getDate() + days);
+      return d.toISOString().split("T")[0];
+    };
+
+    // Helper to add months
+    const addMonths = (dStr, months) => {
+      const d = new Date(dStr);
+      d.setMonth(d.getMonth() + months);
+      return d.toISOString().split("T")[0];
+    };
+
+    const eventsToCreate = [];
+    let currentDateStr = date;
+
+    // Default 1 event if repeat is 'none' (or count is 1)
+    const totalEvents = repeatMode === "none" ? 1 : repeatCount;
+
+    for (let i = 0; i < totalEvents; i++) {
+      eventsToCreate.push({
+        user_id: currentUser.id,
+        title,
+        date: currentDateStr,
+        child: childName,
+        child_id: childId,
+        subject,
+        grade,
+        start_time: startTime,
+        end_time: endTime,
+        duration_minutes: isNaN(duration) ? 60 : duration,
+        resource_id: null
+      });
+
+      // Calculate next date
+      if (repeatMode === "weekly") {
+        currentDateStr = addDays(currentDateStr, 7);
+      } else if (repeatMode === "biweekly") {
+        currentDateStr = addDays(currentDateStr, 14);
+      } else if (repeatMode === "monthly") {
+        currentDateStr = addMonths(currentDateStr, 1);
       }
-      await loadDataFromSupabase();
-      eventModal.classList.add("hidden");
-      renderCalendar();
-    });
+    }
+
+    // Insert all events
+    Promise.all(eventsToCreate.map(ev => supa.from("events").insert(ev)))
+      .then(async (results) => {
+        const error = results.find(r => r.error);
+        if (error) {
+          alert("Failed to save some events");
+          console.error(error);
+          return;
+        }
+        await loadDataFromSupabase();
+        eventModal.classList.add("hidden");
+        renderCalendar();
+      });
   };
+
+  // Toggle repeat inputs
+  const repeatSelect = document.getElementById("eventRepeat");
+  const repeatCountContainer = document.getElementById("repeatCountContainer");
+  if (repeatSelect && repeatCountContainer) {
+    repeatSelect.onchange = () => {
+      if (repeatSelect.value === "none") {
+        repeatCountContainer.classList.add("hidden");
+      } else {
+        repeatCountContainer.classList.remove("hidden");
+      }
+    };
+  }
 
   closeEventModalBtn.onclick = () =>
     eventModal.classList.add("hidden");
