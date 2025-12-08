@@ -5,6 +5,8 @@
   --light-bg: #F6F7F2;
   --text: #2F2F2F;
   --shadow: rgba(0, 0, 0, 0.08);
+  --nav-collapsed: 44px;
+  --nav-expanded: 200px;
 }
 
 body {
@@ -50,6 +52,49 @@ body {
   to { transform: rotate(360deg); }
 }
 
+.app-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 120;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.app-toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.app-toast-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #dfe6d4;
+  box-shadow: 0 14px 32px -24px rgba(0, 0, 0, 0.4);
+  font-size: 0.85rem;
+}
+
+.app-toast-icon {
+  font-size: 1rem;
+}
+
+.app-toast[data-type="success"] .app-toast-inner {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.app-toast[data-type="error"] .app-toast-inner,
+.app-toast[data-type="warning"] .app-toast-inner {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
 .ghost-btn {
   background: #f4f6ee;
   border: 1px solid #e0e8d5;
@@ -92,8 +137,27 @@ body {
   text-decoration-style: dotted;
 }
 
+.page-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 960px) {
+  .page-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
 .page-shell {
   padding: 2rem;
+  margin-left: 122px;
+}
+
+main.page-shell {
+  display: block;
+  padding: 0;
 }
 
 .page-hero {
@@ -208,23 +272,39 @@ body {
 
 /* NAV */
 .top-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 0;
+  bottom: 0;
+  z-index: 20;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 2rem;
+  padding: 1rem 0.75rem 1.25rem;
+  width: var(--nav-collapsed);
   background: #ffffff;
   border-bottom: 1px solid #e5ead8;
-  box-shadow: 0 14px 36px -24px rgba(0, 0, 0, 0.3), 0 1px 0 #edf1e3;
+  border-right: 1px solid #e5ead8;
+  box-shadow: 8px 0 32px -24px rgba(0, 0, 0, 0.35);
+  transition: width 0.5s ease;
+}
+
+.top-nav:hover {
+  width: var(--nav-expanded);
+  align-items: flex-start;
 }
 
 .nav-brand {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  height: 64px;
+  overflow: hidden;
+  max-width: 100%;
+  width: 44px;
+  justify-content: center;
 }
 
 .brand-icon {
@@ -244,6 +324,23 @@ body {
   flex-direction: column;
   gap: 2px;
   line-height: 1.2;
+  font-size: 0.85rem;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.2s ease, opacity 0.2s ease;
+}
+
+.top-nav:hover .brand-copy {
+  max-width: 160px;
+  opacity: 1;
+}
+
+.top-nav:hover .nav-brand {
+  width: auto;
+  justify-content: flex-start;
+  padding: 0 0.25rem;
 }
 
 .brand-eyebrow {
@@ -260,31 +357,46 @@ body {
 
 .nav-links {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
+  flex: 1;
+  margin-top: 0.75rem;
+}
+
+.top-nav:hover .nav-links {
+  align-items: stretch;
+  width: 100%;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
+}
+
+.top-nav:hover .nav-actions .nav-link {
+  width: 100%;
 }
 
 .nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.45rem;
   background: linear-gradient(145deg, #f7f8f3, #ffffff);
   border: 1px solid #e2e8d8;
   border-radius: 12px;
-  padding: 0.7rem 0.95rem;
-  min-width: 170px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
   text-decoration: none;
   color: var(--text);
   box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.35);
   transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  justify-content: center;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .nav-link:hover {
@@ -306,9 +418,20 @@ body {
 }
 
 .nav-label {
-  display: flex;
+  display: none !important;
   flex-direction: column;
   line-height: 1.2;
+  white-space: nowrap;
+}
+
+.top-nav:hover .nav-link {
+  justify-content: flex-start;
+  width: auto;
+  padding: 0 0.75rem;
+}
+
+.top-nav:hover .nav-link .nav-label {
+  display: flex !important;
 }
 
 .nav-label span {
@@ -394,6 +517,7 @@ main {
   grid-template-columns: 2fr 1fr;
   gap: 1rem;
   padding: 1rem 2rem;
+  margin-left: 122px;
 }
 /* 🗓️ Calendar Grid */
 #calendar {
